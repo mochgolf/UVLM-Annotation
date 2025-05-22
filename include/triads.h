@@ -65,14 +65,14 @@ namespace UVLM
         }
 
         /**
-         * @brief Calculate the difference between two matrices element-wise.
+         * @brief Calculate the difference between two matrices element-wise. 逐元素计算两个矩阵之间的差异
          *
-         * @tparam t_1 The first matrix type.
-         * @tparam t_2 The second matrix type.
-         * @tparam t_out The output matrix type.
-         * @param mat1 The first input matrix.
-         * @param mat2 The second input matrix.
-         * @param mat_out The output matrix to store the element-wise difference.
+         * @tparam t_1 The first matrix type. 第一个矩阵类型
+         * @tparam t_2 The second matrix type. 第二个矩阵类型
+         * @tparam t_out The output matrix type. 输出矩阵类型
+         * @param mat1 The first input matrix. 第一个输入矩阵
+         * @param mat2 The second input matrix. 第二个输入矩阵
+         * @param mat_out The output matrix to store the element-wise difference. 输出矩阵，用于存储逐元素差异
          */
         template <typename t_1, typename t_2, typename t_out>
         void VecVecMatrix_difference(const t_1& mat1, const t_2& mat2, t_out& mat_out)

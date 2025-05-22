@@ -557,7 +557,7 @@ namespace UVLM
     /**
      * @brief Initialize surface parameters and allocate memory for induced velocities.
      *
-     * @param phantom_wing_test Flag indicating whether this is a phantom wing test.
+     * @param phantom_wing_test Flag indicating whether this is a phantom wing test. 标识是否为幻影翼面测试
      */
     void get_surface_parameters(bool phantom_wing_test = false)
     {

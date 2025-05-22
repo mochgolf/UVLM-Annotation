@@ -3,29 +3,30 @@
 
 
 /**
- * @brief Runs the Vortex-Lattice Method (VLM).
+ * @brief Runs the Vortex-Lattice Method (VLM). 运行定常涡格法（VLM）。
  *
  * This function solves an aerodynamic solver with the vortex-lattice method (VLM).
+ * 这个函数使用涡格法（VLM）求解气动求解器。
  *
- * @param options - Configuration options for the solver.
- * @param flightconditions - Flight conditions for the solver.
- * @param p_dimensions Pointer to array containing dimensions (chordwise and spanwise) for each surface.
- * @param p_dimensions Pointer to array containing dimensions (chordwise and spanwise) for each wake surface.
- * @param p_zeta Pointer to matrix containing corner point coordinates for each surface grid.
- * @param p_zeta_star Pointer to matrix with corner point coordinates of each wake surface grid.
- * @param p_zeta_dot Pointer to matrix with corner point velocities of each surface grid.
- * @param p_u_ext Pointer to matrix containing external flow velocities (free flow and gust) at corner points of each surface grid.
- * @param p_gamma Pointer to matrix with circulation strength for each vortex ring panel on each surface.
- * @param p_gamma_star Pointer to matrix with circulation strength for each wake vortex ring panel on each wake surface.           
- * @param p_forces Pointer to matrix containing forces at corner points of each surface grid.      
- * @param p_rbm_vel Pointer to array with rigid body motion velocities.
- * @param p_centre_rot Pointer to array with rotational velocities of rigid bodies around their centers. 
+ * @param options - Configuration options for the solver. 求解器配置选项。结构体。
+ * @param flightconditions - Flight conditions for the solver. 飞行条件（大气密度、来流速度、方向）。结构体。
+ * @param p_dimensions Pointer to array containing dimensions (chordwise and spanwise) for each surface. 指向包含每个气动表面尺寸（弦向和展向）的数组的指针。
+ * @param p_dimensions Pointer to array containing dimensions (chordwise and spanwise) for each wake surface. 指向包含每个尾流表面尺寸（弦向和展向）的数组的指针。
+ * @param p_zeta Pointer to matrix containing corner point coordinates for each surface grid. 指向包含每个气动表面网格角点坐标的矩阵的指针。
+ * @param p_zeta_star Pointer to matrix with corner point coordinates of each wake surface grid. 指向每个尾流表面网格角点坐标的矩阵的指针。
+ * @param p_zeta_dot Pointer to matrix with corner point velocities of each surface grid. 指向每个气动表面网格角点速度的矩阵的指针。
+ * @param p_u_ext Pointer to matrix containing external flow velocities (free flow and gust) at corner points of each surface grid. 指向包含每个气动表面网格角点的外部流速（自由流和湍流）的矩阵的指针。
+ * @param p_gamma Pointer to matrix with circulation strength for each vortex ring panel on each surface. 指向每个气动表面涡环面板的环量强度的矩阵的指针。
+ * @param p_gamma_star Pointer to matrix with circulation strength for each wake vortex ring panel on each wake surface. 指向每个尾流涡环面板的环量强度的矩阵的指针。   
+ * @param p_forces Pointer to matrix containing forces at corner points of each surface grid. 指向包含每个气动表面网格角点的力的矩阵的指针。
+ * @param p_rbm_vel Pointer to array with rigid body motion velocities. 指向刚体运动速度的数组的指针。
+ * @param p_centre_rot Pointer to array with rotational velocities of rigid bodies around their centers. 指向刚体绕其中心旋转速度的数组的指针。
  */
 DLLEXPORT void run_VLM
 (
     const UVLM::Types::VMopts& options,
     const UVLM::Types::FlightConditions& flightconditions,
-    unsigned int** p_dimensions,
+    unsigned int** p_dimensions,    // 指针数组，n_surf个指针，每个指针指向一个unsigned int数组（该表面的弦向、展向面板数）的起始位置
     unsigned int** p_dimensions_star,
     double** p_zeta,
     double** p_zeta_star,
@@ -39,7 +40,7 @@ DLLEXPORT void run_VLM
 )
 {
 #if defined(_OPENMP)
-    omp_set_num_threads(options.NumCores);
+    omp_set_num_threads(options.NumCores);  // 设置OpenMP线程数
 #endif
     struct UVLM::StructUtils::lifting_surface Lifting_surfaces = UVLM::StructUtils::lifting_surface
             (options.NumSurfaces,

@@ -35,3 +35,6 @@ tags
 *.un~
 
 build/
+
+# vscode
+.vscode/
