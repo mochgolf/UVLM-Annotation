@@ -1,7 +1,7 @@
 /**
  * @file geometry.h
  * @brief Header file contains a collection of geometry-related and interpolations functions for 
- *        Unsteady Vortex Lattice Method (UVLM) simulations.
+ *        Unsteady Vortex Lattice Method (UVLM) simulations. 包含与非定常涡格法（UVLM）模拟相关的几何和插值函数的头文件
  */
 #pragma once
 
@@ -21,23 +21,24 @@ namespace UVLM
 {       
      /**
      * @namespace Geometry
-     * @brief Namespace for functions related to geometrical operations.
+     * @brief Namespace for functions related to geometrical operations. 关于几何操作的函数的命名空间
      */
     namespace Geometry
     {
 
 
         /**
-         * @brief Calculate the area of a triangle given its side lengths.
+         * @brief Calculate the area of a triangle given its side lengths. 根据三角形的边长计算三角形的面积。
          *
          * This function calculates the area of a triangle using Heron's formula:
+         * 这个函数使用海伦公式计算三角形的面积：
          * \f$s = 0.5*(a + b + c)\f$
          * \f$A = sqrt(s*(s-a)*(s-b)*(s-c))\f$
          *
-         * @param a The length of the first side of the triangle.
-         * @param b The length of the second side of the triangle.
-         * @param c The length of the third side of the triangle.
-         * @return The area of the triangle.
+         * @param a The length of the first side of the triangle. 三角形的第一条边的长度。
+         * @param b The length of the second side of the triangle. 三角形的第二条边的长度。
+         * @param c The length of the third side of the triangle. 三角形的第三条边的长度。
+         * @return The area of the triangle. 三角形的面积。
          */
         UVLM::Types::Real triangle_area
         (
@@ -52,23 +53,24 @@ namespace UVLM
 
 
         /**
-         * @brief Calculate the area of a quadrilateral in 3D.
+         * @brief Calculate the area of a quadrilateral in 3D. 计算三维空间中四边形面板的面积。
          *
          * This function calculates the area of a 3D quadrilateral by dividing it into
          * two triangles and averaging their areas.
+         * 这个函数通过将三维四边形面板分成两个三角形并平均它们的面积来计算四边形的面积。
          * 
-         * The method used is:
-         * 1) divide the quad with a diagonal from 0 to 2
-         * 2) calculate area of resulting triangles
-         * 3) divide the quad with a diagonal from 1 to 3
-         * 4) calculate area of resulting triangles
-         * 5) average the two areas
+         * The method used is: 使用的方法是：
+         * 1) divide the quad with a diagonal from 0 to 2 连接0点到2点的对角线（顶点的顺序是逆时针的，参考`mapping.h`）
+         * 2) calculate area of resulting triangles 计算两个三角形的面积
+         * 3) divide the quad with a diagonal from 1 to 3 连接1点到3点的对角线
+         * 4) calculate area of resulting triangles 计算两个三角形的面积
+         * 5) average the two areas 计算两个面积的平均值：目的是处理非平面面板，即四个顶点不共面。
          *
-         * @tparam t_block The type of block for vertex coordinates (x, y, z).
-         * @param x The x-coordinate block of the vertices.
-         * @param y The y-coordinate block of the vertices.
-         * @param z The z-coordinate block of the vertices.
-         * @return The area of the quadrilateral.
+         * @tparam t_block The type of block for vertex coordinates (x, y, z). 顶点坐标（x，y，z）的块的类型。
+         * @param x The x-coordinate block of the vertices. 顶点的x坐标块。
+         * @param y The y-coordinate block of the vertices. 顶点的y坐标块。
+         * @param z The z-coordinate block of the vertices. 顶点的z坐标块。
+         * @return The area of the quadrilateral. 四边形的面积。
          */
 
         template <typename t_block>
@@ -119,10 +121,11 @@ namespace UVLM
         }
 
         /**
-         * @brief Calculate the longitudinal vector of a panel.
+         * @brief Calculate the longitudinal vector of a panel. 计算面板的纵向/展向向量，指向翼根。
          *
          * This function computes the longitudinal vector of a panel given its
          * vertex coordinates and normalizes it.
+         * 这个函数计算面板的纵向/展向（N方向）向量，给定其顶点坐标并进行归一化。
          *
          * @tparam type The type of the vertex coordinate blocks (x, y, z).
          * @param x The x-coordinate block of the vertices.
@@ -137,17 +140,19 @@ namespace UVLM
                                        UVLM::Types::Vector3& longitudinal_vec
                                        )
         {
+            // 靠近翼根处两点0、1的平均方向向量 - 靠近翼梢处两点2、3的平均方向向量。最终展向向量指向翼根。
 			longitudinal_vec = UVLM::Types::Vector3((x(0,0)+x(1,0)-x(0,1)-x(1,1))/2,
                                                     (y(0,0)+y(1,0)-y(0,1)-y(1,1))/2,
                                                     (z(0,0)+z(1,0)-z(0,1)-z(1,1))/2);
-            longitudinal_vec.normalize();
+            longitudinal_vec.normalize();   // 归一化
         }
 
         /**
-         * @brief Calculate the tangential vector of a panel.
+         * @brief Calculate the tangential vector of a panel. 计算面板的切线/弦向向量。
          *
          * This function computes the tangential vector of a panel given its
          * vertex coordinates and normalizes it.
+         * 这个函数计算面板的切线/弦向（M方向）向量，给定其顶点坐标并进行归一化。
          *
          * @tparam type The type of the vertex coordinate blocks (x, y, z).
          * @param x The x-coordinate block of the vertices.
@@ -162,6 +167,7 @@ namespace UVLM
                                      UVLM::Types::Vector3& tangential_vec
                                      )
         {
+            // 面板后缘处两点1、2的平均方向向量 - 面板前缘处两点0、3的平均方向向量，指向后缘。
 			tangential_vec = UVLM::Types::Vector3((x(1,1)+x(1,0)-x(0,0)-x(0,1))/2,
                                                     (y(1,1)+y(1,0)-y(0,0)-y(0,1))/2,
                                                     (z(1,1)+z(1,0)-z(0,0)-z(0,1))/2);
@@ -169,16 +175,17 @@ namespace UVLM
         }
 
         /**
-         * @brief Calculate the normal vector of a panel.
+         * @brief Calculate the normal vector of a panel. 计算面板的法向量。返回Vector3类型的法向量。
          *
          * This function computes the normal vector of a panel given its
          * vertex coordinates and corrects for left-oriented panels.
+         * 这个函数计算面板的法向量。通过叉乘对角线向量0->2和3->1来计算法向量。
          *
          * @tparam type The type of the vertex coordinate blocks (x, y, z).
          * @param x The x-coordinate block of the vertices.
          * @param y The y-coordinate block of the vertices.
          * @param z The z-coordinate block of the vertices.
-         * @param normal The resulting normal vector.
+         * @param normal The resulting normal vector. 归一化的法向量
          */
         template <typename type>
         void panel_normal(type& x,
@@ -187,7 +194,7 @@ namespace UVLM
                           UVLM::Types::Vector3& normal
                           )
         {
-            // correction for left-oriented panels
+            // correction for left-oriented panels 
             UVLM::Types::Vector3 v_01(x(0,1) - x(0,0),
                                       y(0,1) - y(0,0),
                                       z(0,1) - z(0,0));
@@ -198,15 +205,15 @@ namespace UVLM
 
             UVLM::Types::Vector3 A(x(1,1) - x(0,0),
                                    y(1,1) - y(0,0),
-                                   z(1,1) - z(0,0));
+                                   z(1,1) - z(0,0));    // 0->2
 
             UVLM::Types::Vector3 B(x(1,0) - x(0,1),
                                    y(1,0) - y(0,1),
-                                   z(1,0) - z(0,1));
+                                   z(1,0) - z(0,1));    // 3->1
 
             // if (diff(2) < 0.0)
             // {
-                normal = B.cross(A);
+                normal = B.cross(A);    // AB叉乘计算法向量
             // } else
             // {
                 // normal = A.cross(B);
@@ -214,18 +221,19 @@ namespace UVLM
             normal.normalize();
         }
         /**
-         * @brief Calculate the normal vector of a panel.
+         * @brief Calculate the normal vector of a panel. 计算面板的法向量。返回分量x、y、z。
          *
          * This function computes the normal vector of a panel given its
          * vertex coordinates and provides the individual components.
+         * 这个函数计算面板的法向量。通过叉乘对角线向量0->2和3->1来计算法向量。
          *
          * @tparam type The type of the vertex coordinate blocks (x, y, z).
          * @param x The x-coordinate block of the vertices.
          * @param y The y-coordinate block of the vertices.
          * @param z The z-coordinate block of the vertices.
-         * @param xnormal The x-component of the normal vector.
-         * @param ynormal The y-component of the normal vector.
-         * @param znormal The z-component of the normal vector.
+         * @param xnormal The x-component of the normal vector. 法向量的x分量。
+         * @param ynormal The y-component of the normal vector. 法向量的y分量。
+         * @param znormal The z-component of the normal vector. 法向量的z分量。
          */
         template <typename type>
         void panel_normal(type& x,
@@ -243,54 +251,57 @@ namespace UVLM
             znormal = A(2);
         }
         /**
-         * @brief Generate surface normals for a given set of surface points.
+         * @brief Generate surface normals for a given set of surface points. 为给定的一组表面点生成表面法向量，例如`zeta`。
          *
          * This function generates surface normals for a set of surface points represented
          * as a matrix of 3D coordinates.
+         * 这个函数为一组表面点生成表面法向量，这些点表示为3D坐标的矩阵。
          *
-         * @tparam type_in The input type of the surface points.
-         * @tparam type_out The output type of the surface normals.
-         * @param zeta The matrix of surface points.
-         * @param normal The matrix to store the generated normals.
+         * @tparam type_in The input type of the surface points. 输入表面点的类型。
+         * @tparam type_out The output type of the surface normals. 输出法向量的类型。
+         * @param zeta The matrix of surface points. 表面点的矩阵。
+         * @param normal The matrix to store the generated normals. 存储生成的法向量的矩阵。
          */
         template <typename type_in,
                   typename type_out>
-        void generate_surfaceNormal(const type_in& zeta,
+        void generate_surfaceNormal(const type_in& zeta,    // 意味着该函数基本只针对气动面网格面板顶点`zeta`
                                     type_out& normal)
         {
             for (unsigned int i_surf=0; i_surf<zeta.size(); ++i_surf)
             {
                 for (unsigned int i_dim=0; i_dim<zeta[i_surf].size(); i_dim++)
                 {
+                    // 网格面板数=顶点数-1
                     const unsigned int M = zeta[i_surf][i_dim].rows() - 1;
                     const unsigned int N = zeta[i_surf][i_dim].cols() - 1;
-
+                    // 逐网格面板计算法向量
                     for (unsigned int iM=0; iM<M; ++iM)
                     {
                         for (unsigned int jN=0; jN<N; ++jN)
                         {
                             UVLM::Types::Vector3 temp_normal;
-                            panel_normal(zeta[i_surf][0].template block<2,2>(iM,jN),
-                                         zeta[i_surf][1].template block<2,2>(iM,jN),
-                                         zeta[i_surf][2].template block<2,2>(iM,jN),
+                            panel_normal(zeta[i_surf][0].template block<2,2>(iM,jN),    // x坐标集合
+                                         zeta[i_surf][1].template block<2,2>(iM,jN),    // y坐标集合
+                                         zeta[i_surf][2].template block<2,2>(iM,jN),    // z坐标集合
                                          temp_normal);
-                            UVLM::Types::pass_3D_Vector_to_VecMatrix(normal[i_surf], temp_normal, iM, jN);
+                            UVLM::Types::pass_3D_Vector_to_VecMatrix(normal[i_surf], temp_normal, iM, jN); // 将法向量复制到法向量矩阵
                         }
                     }
                 }
             }
         }
         /**
-         * @brief Checks if a surface panel is quadrilater or not. 
+         * @brief Checks if a surface panel is quadrilater or not. 检查表面面板是否为四边形。
          * 
          * This functioncs checks the distance between two corner points are smaller than a specific threshold to
          *        identify triangular panels, otherwise it would be a quadrilateral oone.
+         * 这个函数检查两个角点之间的距离是否小于特定阈值，以识别三角形面板，否则它将是一个四边形面板。
          * 
          * @tparam type_in The input vector type.
-         * @param delta_coord_epsilon Vector containing distances between the corner points in the epsilon coordinate.
-         * @param delta_coord_eta Vector containing distances between the corner points  in the eta coordinate.
-         * @param flag_triangle A boolean flag indicating if the vectors represent a triangle.
-         * @param ignored_index The index of the corner point to be ignored if vectors represent a triangle.
+         * @param delta_coord_epsilon Vector containing distances between the corner points in the epsilon coordinate. 包含在epsilon坐标系中角点之间距离的向量。
+         * @param delta_coord_eta Vector containing distances between the corner points  in the eta coordinate. 包含在eta坐标系中角点之间距离的向量。
+         * @param flag_triangle A boolean flag indicating if the vectors represent a triangle. 标识向量是否表示三角形的布尔标志。
+         * @param ignored_index The index of the corner point to be ignored if vectors represent a triangle. 如果向量表示三角形，则要忽略的角点的索引。
          */
 		template <typename type_in>
 		void check_for_quadrilateral_panel(const type_in& delta_coord_epsilon,
@@ -301,6 +312,7 @@ namespace UVLM
 			for (int i=0; i<delta_coord_epsilon.size(); ++i)
 			{
 				flag_triangle = false;
+                // 检查两个角点之间的距离是否小于特定阈值
 				if ((abs(delta_coord_epsilon[i]) < 0.00001) && (abs(delta_coord_eta[i]) < 0.00001))
 				{
 					flag_triangle = true;
@@ -310,13 +322,14 @@ namespace UVLM
 			}
 		}
         /**
-         * @brief Generates surface vectors (normal, longitudinal, and perpendicular) for a given input surface.
-         * @tparam type_in The input surface type.
-         * @tparam type_out The output surface type.
-         * @param zeta The input surface represented as a collection of points.
-         * @param normal The output normal vectors for each panel in the surface.
-         * @param long_vec The output longitudinal vectors for each panel in the surface.
-         * @param perpendicular_vec The output perpendicular vectors for each panel in the surface.
+         * @brief Generates surface vectors (normal, longitudinal, and perpendicular) for a given input surface. 
+         *        为输入的表面生成正交的法向量、展向向量和垂直向量，以构建局部右手坐标系。
+         * @tparam type_in The input surface type. 输入表面类型。
+         * @tparam type_out The output surface type. 输出表面类型。
+         * @param zeta The input surface represented as a collection of points. 输入表面表示为点的集合。
+         * @param normal The output normal vectors for each panel in the surface. 输出表面每个面板的法向量。
+         * @param long_vec The output longitudinal vectors for each panel in the surface. 输出表面每个面板的展向向量。
+         * @param perpendicular_vec The output perpendicular vectors for each panel in the surface. 输出表面每个面板的垂直向量。
          */
         template <typename type_in,
                   typename type_out>
@@ -334,7 +347,8 @@ namespace UVLM
                     continue;
                 }
                 else
-                {                
+                {
+                    // 计算弦向和展向面板数=顶点数-1
                     M = zeta[i_surf][0].rows() - 1;
                     N = zeta[i_surf][0].cols() - 1;
 
@@ -345,22 +359,23 @@ namespace UVLM
                             panel_longitudinal_vector(zeta[i_surf][0].template block<2,2>(iM,jN),
                                                         zeta[i_surf][1].template block<2,2>(iM,jN),
                                                         zeta[i_surf][2].template block<2,2>(iM,jN),
-                                                        temp_long_vec);
-                            temp_long_vec *= -1.; // flip to get correct normal direction
+                                                        temp_long_vec); // 计算展向向量
+                            temp_long_vec *= -1.; // flip to get correct normal direction 反转展向向量以使其指向翼梢（节点编号增大的方向）
                             UVLM::Types::pass_3D_Vector_to_VecMatrix(long_vec[i_surf], temp_long_vec,iM,jN);
 
                             
                             panel_tangential_vector(zeta[i_surf][0].template block<2,2>(iM,jN),
                                                     zeta[i_surf][1].template block<2,2>(iM,jN),
                                                     zeta[i_surf][2].template block<2,2>(iM,jN),
-                                                    temp_tangential_vec);
+                                                    temp_tangential_vec);   // 计算弦向向量
 
-                            temp_normal_vec = temp_tangential_vec.cross(temp_long_vec);
+                            temp_normal_vec = temp_tangential_vec.cross(temp_long_vec); // 法向量是弦向向量和展向向量的叉乘
                             temp_normal_vec.normalize();
 
                             UVLM::Types::pass_3D_Vector_to_VecMatrix(normal[i_surf],temp_normal_vec,iM,jN);
 
-                            temp_perpendicular_vec = -temp_normal_vec.cross(temp_long_vec);
+                            // 法向量、展向向量和垂直向量构成一个右手坐标系。
+                            temp_perpendicular_vec = -temp_normal_vec.cross(temp_long_vec);// 法向量和展向向量的叉乘，取反方向，代表垂直于法向量和展向向量构成的平面的向量。
                             temp_perpendicular_vec.normalize();
                             
                             UVLM::Types::pass_3D_Vector_to_VecMatrix(perpendicular_vec[i_surf],temp_perpendicular_vec,iM,jN);
@@ -371,16 +386,17 @@ namespace UVLM
             }
         }
         /**
-         * @brief Generates surface vectors for a wake using the surface vectors of the corresponding surface.
+         * @brief Generates surface vectors for a wake using the surface vectors of the corresponding surface. 为一个尾流生成表面向量，使用相应表面的表面向量。
          * 
          * Compared to a lifting surface, we need to compute the vectors for the corner points not the panel itself.
+         * 相比于升力面，我们需要计算角点的向量，而不是面板本身。
          * 
-         * @tparam type_in The input wake surface type.
-         * @tparam type_out The output surface type.
-         * @param zeta_star The input wake surface.
-         * @param normal The output normal vectors for the wake surface.
-         * @param longitudinal The output longitudinal vectors for the wake surface.
-         * @param perpendicular The output perpendicular vectors for the wake surface.
+         * @tparam type_in The input wake surface type. 输入尾流表面类型。
+         * @tparam type_out The output surface type. 输出表面类型。
+         * @param zeta_star The input wake surface. 输入尾流表面。
+         * @param normal The output normal vectors for the wake surface. 输出尾流表面的法向量。
+         * @param longitudinal The output longitudinal vectors for the wake surface. 输出尾流表面的展向向量。
+         * @param perpendicular The output perpendicular vectors for the wake surface. 输出尾流表面的垂直向量。
          */
         template <typename type_in,
                   typename type_out>
@@ -389,12 +405,13 @@ namespace UVLM
                                            type_out& longitudinal,
                                            type_out& perpendicular)
         {
-            // generate surface vectors of panel
+            // generate surface vectors of panel 生成尾流面板的正交的表面向量
             generate_surface_vectors(zeta_star,
                                      normal,
                                      longitudinal,
                                      perpendicular);
             // copy surface vectors of last panel (col and row) to last wake corner point (col and row)
+            // 将最后一个面板的表面向量（列和行）复制到最后一个尾流角点（列和行）
             const uint N_surf = normal.size();
             for(uint i_surf=0; i_surf < N_surf; ++i_surf)
             {

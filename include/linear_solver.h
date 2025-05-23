@@ -7,7 +7,7 @@
 namespace UVLM
 {
     /** 求解Ax=b */
-    namespace LinearSolver
+    namespace LinearSolver  // 线性求解器命名空间
     {
         template <typename t_a,
                   typename t_b,
