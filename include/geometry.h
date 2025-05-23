@@ -323,7 +323,7 @@ namespace UVLM
 		}
         /**
          * @brief Generates surface vectors (normal, longitudinal, and perpendicular) for a given input surface. 
-         *        为输入的表面生成正交的法向量、展向向量和垂直向量，以构建局部右手坐标系。
+         *        为输入的表面生成正交的法向量、展向向量和垂直向量，以构建局部右手坐标系。坐标系存储于面板位置(M,N)处。
          * @tparam type_in The input surface type. 输入表面类型。
          * @tparam type_out The output surface type. 输出表面类型。
          * @param zeta The input surface represented as a collection of points. 输入表面表示为点的集合。
@@ -389,7 +389,7 @@ namespace UVLM
          * @brief Generates surface vectors for a wake using the surface vectors of the corresponding surface. 为一个尾流生成表面向量，使用相应表面的表面向量。
          * 
          * Compared to a lifting surface, we need to compute the vectors for the corner points not the panel itself.
-         * 相比于升力面，我们需要计算角点的向量，而不是面板本身。
+         * 相比于升力面，我们需要计算角点的向量，而不是面板本身。因为处理尾流卷起等需要考虑到边界节点的坐标系。坐标系存储于尾流节点位置(M+1,N+1)处。
          * 
          * @tparam type_in The input wake surface type. 输入尾流表面类型。
          * @tparam type_out The output surface type. 输出表面类型。
@@ -413,23 +413,24 @@ namespace UVLM
             // copy surface vectors of last panel (col and row) to last wake corner point (col and row)
             // 将最后一个面板的表面向量（列和行）复制到最后一个尾流角点（列和行）
             const uint N_surf = normal.size();
-            for(uint i_surf=0; i_surf < N_surf; ++i_surf)
+            for(uint i_surf=0; i_surf < N_surf; ++i_surf)   // 逐表面扫描
             {
-                const uint N_row = normal[i_surf][0].rows();
-                const uint N_col = normal[i_surf][0].cols();
+                const uint N_row = normal[i_surf][0].rows();    // 从角点x坐标矩阵获取行数
+                const uint N_col = normal[i_surf][0].cols();    // 从角点x坐标矩阵获取列数
             
-                for(uint i_dim =0; i_dim < 3; ++i_dim)
+                for(uint i_dim =0; i_dim < 3; ++i_dim)  // 循环对x、y、z坐标矩阵执行
                 {
                 
-                    for (uint i_row = 0; i_row < N_row; ++i_row)
+                    for (uint i_row = 0; i_row < N_row; ++i_row)    // 从第0行到第N_row-1行
                     {
-    
+                        // 将次外侧列的法向量、展向向量和垂直向量复制到最外侧一列
                         normal[i_surf][i_dim](i_row, N_col - 1) = normal[i_surf][i_dim](i_row, N_col-2);
                         longitudinal[i_surf][i_dim](i_row, N_col - 1) = longitudinal[i_surf][i_dim](i_row, N_col-2);
                         perpendicular[i_surf][i_dim](i_row, N_col - 1) = perpendicular[i_surf][i_dim](i_row, N_col-2);
                     }                
-                    for (uint i_col = 0; i_col < N_col; ++i_col)
+                    for (uint i_col = 0; i_col < N_col; ++i_col)    // 从第0列到第N_col-1列
                     {
+                        // 将次外侧行的法向量、展向向量和垂直向量复制到最外侧一行
                         normal[i_surf][i_dim](N_row - 1, i_col) = normal[i_surf][i_dim](N_row-2, i_col);
                         longitudinal[i_surf][i_dim](N_row - 1, i_col) = longitudinal[i_surf][i_dim](N_row-2, i_col);
                         perpendicular[i_surf][i_dim](N_row - 1, i_col) = perpendicular[i_surf][i_dim](N_row-2, i_col);
@@ -438,22 +439,24 @@ namespace UVLM
             }
         }
         /**
-         * @brief Converts global coordinates to panel coordinate system.
+         * @brief Converts global coordinates to panel coordinate system. 将全局坐标转换为面板坐标系。
          *
          * This function takes global coordinates (x_G, y_G, z_G) and transforms them into the panel's
          * local coordinate system defined by chordwise, tangential, and normal vectors.
+         * 这个函数将面板角点全局坐标（x_G，y_G，z_G）转换为面板的局部坐标系，该坐标系由弦向、切向和法向向量定义。
+         * 这些向量可由`generate_surface_vectors`和`generate_surface_vectors_wake`函数计算。
          *
-         * @tparam type_in The type of input coordinates (e.g., matrices).
-         * @tparam type_out The type of output coordinates (e.g., matrices).
-         * @param x_G x-coordinate in the global system.
-         * @param y_G y-coordinate in the global system.
-         * @param z_G z-coordinate in the global system.
-         * @param chordwise_vec Chordwise vector of the panel.
-         * @param tangential_vec Tangential vector of the panel.
-         * @param normal_vec Normal vector of the panel.
-         * @param x_transf Transformed x-coordinate in the panel's coordinate system.
-         * @param y_transf Transformed y-coordinate in the panel's coordinate system.
-         * @param z_transf Transformed z-coordinate in the panel's coordinate system.
+         * @tparam type_in The type of input coordinates (e.g., matrices). 输入坐标的类型（例如，矩阵）。
+         * @tparam type_out The type of output coordinates (e.g., matrices). 输出坐标的类型（例如，矩阵）。
+         * @param x_G x-coordinate in the global system. 全局坐标系G系中的x坐标。2x2矩阵。
+         * @param y_G y-coordinate in the global system. 全局坐标系G系中的y坐标。2x2矩阵。
+         * @param z_G z-coordinate in the global system. 全局坐标系G系中的z坐标。2x2矩阵。
+         * @param chordwise_vec Chordwise vector of the panel. 面板的弦向向量。
+         * @param tangential_vec Tangential vector of the panel. 面板的切向向量。
+         * @param normal_vec Normal vector of the panel. 面板的法向向量。
+         * @param x_transf Transformed x-coordinate in the panel's coordinate system. 转换到面板坐标系中的x坐标。
+         * @param y_transf Transformed y-coordinate in the panel's coordinate system. 转换到面板坐标系中的y坐标。
+         * @param z_transf Transformed z-coordinate in the panel's coordinate system. 转换到面板坐标系中的z坐标。
          */
         template <typename type_in,
                   typename type_out>
@@ -471,9 +474,9 @@ namespace UVLM
             UVLM::Types::Vector4 x = UVLM::Types::Vector4(x_G(0,0), x_G(1, 0), x_G(1, 1), x_G(0, 1));
             UVLM::Types::Vector4 y = UVLM::Types::Vector4(y_G(0,0), y_G(1, 0), y_G(1, 1), y_G(0, 1));
             UVLM::Types::Vector4 z = UVLM::Types::Vector4(z_G(0,0), z_G(1, 0), z_G(1, 1), z_G(0, 1));
-            x_transf = x *chordwise_vec[0] + y *chordwise_vec[1] + z *chordwise_vec[2];
-            y_transf = x *tangential_vec[0] + y *tangential_vec[1] + z *tangential_vec[2];
-            z_transf = x *normal_vec[0] + y *normal_vec[1] + z * normal_vec[2];
+            x_transf = x *chordwise_vec[0] + y *chordwise_vec[1] + z *chordwise_vec[2]; // 向量投影：x'= (x, y, z) * chordwise_vec
+            y_transf = x *tangential_vec[0] + y *tangential_vec[1] + z *tangential_vec[2];  // 向量投影：y'= (x, y, z) * tangential_vec
+            z_transf = x *normal_vec[0] + y *normal_vec[1] + z * normal_vec[2]; // 向量投影：z'= (x, y, z) * normal_vec
         }
         /**
          * @brief Converts global coordinates to panel coordinate system for a single point.
