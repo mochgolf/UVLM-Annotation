@@ -60,16 +60,16 @@ namespace UVLM
          * 这个函数通过将三维四边形面板分成两个三角形并平均它们的面积来计算四边形的面积。
          * 
          * The method used is: 使用的方法是：
-         * 1) divide the quad with a diagonal from 0 to 2 连接0点到2点的对角线（顶点的顺序是逆时针的，参考`mapping.h`）
+         * 1) divide the quad with a diagonal from 0 to 2 连接0点到2点的对角线（顶点（角点）的顺序是逆时针的，参考`mapping.h`）
          * 2) calculate area of resulting triangles 计算两个三角形的面积
          * 3) divide the quad with a diagonal from 1 to 3 连接1点到3点的对角线
          * 4) calculate area of resulting triangles 计算两个三角形的面积
-         * 5) average the two areas 计算两个面积的平均值：目的是处理非平面面板，即四个顶点不共面。
+         * 5) average the two areas 计算两个面积的平均值：目的是处理非平面面板，即四个顶点（角点）不共面。
          *
-         * @tparam t_block The type of block for vertex coordinates (x, y, z). 顶点坐标（x，y，z）的块的类型。
-         * @param x The x-coordinate block of the vertices. 顶点的x坐标块。
-         * @param y The y-coordinate block of the vertices. 顶点的y坐标块。
-         * @param z The z-coordinate block of the vertices. 顶点的z坐标块。
+         * @tparam t_block The type of block for vertex coordinates (x, y, z). 顶点（角点）坐标（x，y，z）的块的类型。
+         * @param x The x-coordinate block of the vertices. 顶点（角点）的x坐标块。
+         * @param y The y-coordinate block of the vertices. 顶点（角点）的y坐标块。
+         * @param z The z-coordinate block of the vertices. 顶点（角点）的z坐标块。
          * @return The area of the quadrilateral. 四边形的面积。
          */
 
@@ -125,7 +125,7 @@ namespace UVLM
          *
          * This function computes the longitudinal vector of a panel given its
          * vertex coordinates and normalizes it.
-         * 这个函数计算面板的纵向/展向（N方向）向量，给定其顶点坐标并进行归一化。
+         * 这个函数计算面板的纵向/展向（N方向）向量，给定其顶点（角点）坐标并进行归一化。
          *
          * @tparam type The type of the vertex coordinate blocks (x, y, z).
          * @param x The x-coordinate block of the vertices.
@@ -152,7 +152,7 @@ namespace UVLM
          *
          * This function computes the tangential vector of a panel given its
          * vertex coordinates and normalizes it.
-         * 这个函数计算面板的切线/弦向（M方向）向量，给定其顶点坐标并进行归一化。
+         * 这个函数计算面板的切线/弦向（M方向）向量，给定其顶点（角点）坐标并进行归一化。
          *
          * @tparam type The type of the vertex coordinate blocks (x, y, z).
          * @param x The x-coordinate block of the vertices.
@@ -264,14 +264,14 @@ namespace UVLM
          */
         template <typename type_in,
                   typename type_out>
-        void generate_surfaceNormal(const type_in& zeta,    // 意味着该函数基本只针对气动面网格面板顶点`zeta`
+        void generate_surfaceNormal(const type_in& zeta,    // 意味着该函数基本只针对气动面网格面板顶点（角点）`zeta`
                                     type_out& normal)
         {
             for (unsigned int i_surf=0; i_surf<zeta.size(); ++i_surf)
             {
                 for (unsigned int i_dim=0; i_dim<zeta[i_surf].size(); i_dim++)
                 {
-                    // 网格面板数=顶点数-1
+                    // 网格面板数=顶点（角点）数-1
                     const unsigned int M = zeta[i_surf][i_dim].rows() - 1;
                     const unsigned int N = zeta[i_surf][i_dim].cols() - 1;
                     // 逐网格面板计算法向量
@@ -348,7 +348,7 @@ namespace UVLM
                 }
                 else
                 {
-                    // 计算弦向和展向面板数=顶点数-1
+                    // 计算弦向和展向面板数=顶点（角点）数-1
                     M = zeta[i_surf][0].rows() - 1;
                     N = zeta[i_surf][0].cols() - 1;
 
@@ -443,7 +443,7 @@ namespace UVLM
          *
          * This function takes global coordinates (x_G, y_G, z_G) and transforms them into the panel's
          * local coordinate system defined by chordwise, tangential, and normal vectors.
-         * 这个函数将面板角点全局坐标（x_G，y_G，z_G）转换为面板的局部坐标系，该坐标系由弦向、切向和法向向量定义。
+         * 这个函数将面板角点（0,1,2,3）的全局坐标（x_G，y_G，z_G）转换为面板的局部坐标系，该坐标系由弦向、切向和法向向量定义。
          * 这些向量可由`generate_surface_vectors`和`generate_surface_vectors_wake`函数计算。
          *
          * @tparam type_in The type of input coordinates (e.g., matrices). 输入坐标的类型（例如，矩阵）。
@@ -479,19 +479,20 @@ namespace UVLM
             z_transf = x *normal_vec[0] + y *normal_vec[1] + z * normal_vec[2]; // 向量投影：z'= (x, y, z) * normal_vec
         }
         /**
-         * @brief Converts global coordinates to panel coordinate system for a single point.
+         * @brief Converts global coordinates to panel coordinate system for a single point. 将一个点的全局坐标转换为面板坐标系。
          *
          * This function transforms a single point defined by (x_G, y_G, z_G) into the panel's local
          * coordinate system defined by chordwise, tangential, and normal vectors.
+         * 这个函数将一个点的全局坐标（x_G，y_G，z_G）转换为面板的局部坐标系，该坐标系由弦向、切向和法向向量定义。
          *
-         * @tparam type The type of input and output coordinates (e.g., vectors).
-         * @param x_G x-coordinate in the global system.
-         * @param y_G y-coordinate in the global system.
-         * @param z_G z-coordinate in the global system.
-         * @param chordwise_vec Chordwise vector of the panel.
-         * @param tangential_vec Tangential vector of the panel.
-         * @param normal_vec Normal vector of the panel.
-         * @param point_transf Transformed point in the panel's coordinate system (x, y, z).
+         * @tparam type The type of input and output coordinates (e.g., vectors). 输入和输出坐标的类型（例如，向量）。
+         * @param x_G x-coordinate in the global system. 全局坐标系G系中的x坐标。
+         * @param y_G y-coordinate in the global system. 全局坐标系G系中的y坐标。
+         * @param z_G z-coordinate in the global system. 全局坐标系G系中的z坐标。
+         * @param chordwise_vec Chordwise vector of the panel. 面板的弦向向量。
+         * @param tangential_vec Tangential vector of the panel. 面板的切向向量。
+         * @param normal_vec Normal vector of the panel. 面板的法向向量。
+         * @param point_transf Transformed point in the panel's coordinate system (x, y, z). 转换到面板坐标系中的点（x，y，z）。
          */
         template <typename type>
         void convert_to_panel_coordinate_system(const type& x_G,
@@ -509,18 +510,20 @@ namespace UVLM
         }
 
         /**
-         * @brief Converts panel coordinates to global coordinate system.
+         * @brief Converts panel coordinates to global coordinate system. 将面板坐标转换到全局坐标系。
          *
          * This function takes coordinates (x_panel, y_panel, z_panel) in the panel's local coordinate system
          * and transforms them into global coordinates using chordwise, tangential, and normal vectors.
+         * 这个函数将面板坐标系下的点的坐标（x_panel，y_panel，z_panel）转换为全局坐标系G系中的坐标，使用弦向、切向和法向向量。
+         * 
          *
-         * @tparam type The type of input and output coordinates (e.g., scalars).
-         * @param x_panel x-coordinate in the panel's coordinate system.
-         * @param y_panel y-coordinate in the panel's coordinate system.
-         * @param z_panel z-coordinate in the panel's coordinate system.
-         * @param chordwise_vec Chordwise vector of the panel.
-         * @param tangential_vec Tangential vector of the panel.
-         * @param normal_vec Normal vector of the panel.
+         * @tparam type The type of input and output coordinates (e.g., scalars). 输入和输出坐标的类型（例如，标量）。
+         * @param x_panel x-coordinate in the panel's coordinate system. 面板坐标系中的x坐标。
+         * @param y_panel y-coordinate in the panel's coordinate system. 面板坐标系中的y坐标。
+         * @param z_panel z-coordinate in the panel's coordinate system. 面板坐标系中的z坐标。
+         * @param chordwise_vec Chordwise vector of the panel. 面板的弦向向量。
+         * @param tangential_vec Tangential vector of the panel. 面板的切向向量。
+         * @param normal_vec Normal vector of the panel. 面板的法向向量。
          */
         template <typename type>
         void convert_to_global_coordinate_system(type& x_panel,
@@ -529,14 +532,14 @@ namespace UVLM
                                                 const UVLM::Types::Vector3& chordwise_vec,
                                                 const UVLM::Types::Vector3& tangential_vec,
                                                 const UVLM::Types::Vector3& normal_vec
-                                                )
+                                                )   // 返回坐标的分量
         {
-		    UVLM::Types::Vector3 panel_coordinates =UVLM::Types::Vector3(x_panel, y_panel, z_panel);
-			UVLM::Types::MatrixX transformation_matrix = UVLM::Types::MatrixX::Zero(3,3);
+		    UVLM::Types::Vector3 panel_coordinates =UVLM::Types::Vector3(x_panel, y_panel, z_panel);    // 面板坐标系下的点坐标
+			UVLM::Types::MatrixX transformation_matrix = UVLM::Types::MatrixX::Zero(3,3);   // 3x3转换矩阵
 			transformation_matrix << chordwise_vec[0], chordwise_vec[1], chordwise_vec[2],
 									 tangential_vec[0], tangential_vec[1], tangential_vec[2],
-									 normal_vec[0], normal_vec[1], normal_vec[2];
-            UVLM::Types::Vector3 global_coordinates = transformation_matrix.transpose()*panel_coordinates;
+									 normal_vec[0], normal_vec[1], normal_vec[2];   // 转换矩阵为[chordwise_vec.T；tangential_vec.T；normal_vec.T]的矩阵
+            UVLM::Types::Vector3 global_coordinates = transformation_matrix.transpose()*panel_coordinates;  // 全局坐标=转换矩阵的转置*面板坐标系下的点坐标
 			x_panel = global_coordinates[0];
 			y_panel = global_coordinates[1];
 			z_panel = global_coordinates[2];
@@ -546,7 +549,7 @@ namespace UVLM
                                                 const UVLM::Types::Vector3& chordwise_vec,
                                                 const UVLM::Types::Vector3& tangential_vec,
                                                 const UVLM::Types::Vector3& normal_vec
-                                                )
+                                                )   // 返回坐标向量
         {
 			UVLM::Types::MatrixX transformation_matrix = UVLM::Types::MatrixX::Zero(3,3);
 			transformation_matrix << chordwise_vec[0], chordwise_vec[1], chordwise_vec[2],
@@ -555,19 +558,20 @@ namespace UVLM
             coordinates_vec = transformation_matrix.inverse()*coordinates_vec;
 		}
         /**
-         * @brief Converts global coordinates to panel coordinate system for a single point.
+         * @brief Converts global coordinates to panel coordinate system for a single point. 将一个点的全局坐标转换到面板坐标系。
          *
          * This function transforms a single point defined by (x_G, y_G, z_G) into the panel's local
          * coordinate system defined by chordwise, tangential, and normal vectors.
+         * 这个函数将一个点的全局坐标（x_G，y_G，z_G）转换为面板的局部坐标系，该坐标系由弦向、切向和法向向量定义。
          *
-         * @tparam type The type of input and output coordinates (e.g., vectors).
-         * @param x_G x-coordinate in the global system.
-         * @param y_G y-coordinate in the global system.
-         * @param z_G z-coordinate in the global system.
-         * @param chordwise_vec Chordwise vector of the panel.
-         * @param tangential_vec Tangential vector of the panel.
-         * @param normal_vec Normal vector of the panel.
-         * @param point_transf Transformed point in the panel's coordinate system (x, y, z).
+         * @tparam type The type of input and output coordinates (e.g., vectors). 输入和输出坐标的类型（例如，向量）。
+         * @param x_G x-coordinate in the global system. 全局坐标系G系中的x坐标。
+         * @param y_G y-coordinate in the global system. 全局坐标系G系中的y坐标。
+         * @param z_G z-coordinate in the global system. 全局坐标系G系中的z坐标。
+         * @param chordwise_vec Chordwise vector of the panel. 面板的弦向向量。
+         * @param tangential_vec Tangential vector of the panel. 面板的切向向量。
+         * @param normal_vec Normal vector of the panel. 面板的法向向量。
+         * @param point_transf Transformed point in the panel's coordinate system (x, y, z). 转换到面板坐标系中的点（x，y，z）。
          */
         void convert_to_panel_coordinate_system(UVLM::Types::Vector3& coordinates_vec,
                                                 const UVLM::Types::Vector3& chordwise_vec,
@@ -583,17 +587,19 @@ namespace UVLM
 		}
                 /**
          * @brief Converts a vector of coordinates from panel A's coordinate system to panel B's coordinate system.
+         *        将一个坐标向量从面板A的坐标系转换为面板B的坐标系。
          *
          * This function takes a vector of coordinates in panel A's local coordinate system and converts
          * them into panel B's local coordinate system using the respective chordwise, tangential, and normal vectors.
+         * 这个函数将面板A的局部坐标系中的一个坐标向量转换为面板B的局部坐标系，使用各自的弦向、切向和法向向量。
          *
-         * @param vector_to_be_converted The vector of coordinates to be converted.
-         * @param chordwise_vec_A Chordwise vector of panel A.
-         * @param tangential_vec_A Tangential vector of panel A.
-         * @param normal_vec_A Normal vector of panel A.
-         * @param chordwise_vec_B Chordwise vector of panel B.
-         * @param tangential_vec_B Tangential vector of panel B.
-         * @param normal_vec_B Normal vector of panel B.
+         * @param vector_to_be_converted The vector of coordinates to be converted. 要转换的坐标向量。
+         * @param chordwise_vec_A Chordwise vector of panel A. 面板A的弦向向量。
+         * @param tangential_vec_A Tangential vector of panel A. 面板A的切向向量。
+         * @param normal_vec_A Normal vector of panel A. 面板A的法向向量。
+         * @param chordwise_vec_B Chordwise vector of panel B. 面板B的弦向向量。
+         * @param tangential_vec_B Tangential vector of panel B. 面板B的切向向量。
+         * @param normal_vec_B Normal vector of panel B. 面板B的法向向量。
          */
         void convert_from_panel_A_to_panel_B_coordinate_system(UVLM::Types::Vector3& vector_to_be_converted,
 																const UVLM::Types::Vector3& chordwise_vec_A,
@@ -604,6 +610,7 @@ namespace UVLM
 																const UVLM::Types::Vector3& normal_vec_B
 																)
         {
+            // 先从面板A的坐标系转换到全局坐标系，再从全局坐标系转换到面板B的坐标系
 			UVLM::Geometry::convert_to_global_coordinate_system(vector_to_be_converted,
 																chordwise_vec_A,
 																tangential_vec_A,
@@ -616,10 +623,10 @@ namespace UVLM
 																);
 		}
         /**
-         * @brief Computes the coordinate of the collocation points.
+         * @brief Computes the coordinate of the collocation points. 计算面板的“协同点”坐标。实际上是对面板顶点（角点）坐标进行双线性映射（平均池化）。
          * 
-         * @param vortex_mesh A Matrix containing the corner point coordinates of a discretised surface.
-         * @return A vector containing the differences between adjacent elements.
+         * @param vortex_mesh A Matrix containing the corner point coordinates of a discretised surface. 一个矩阵，包含离散化表面的角点坐标。
+         * @return A vector containing the differences between adjacent elements. 一个向量，包含相邻元素之间的差异。
          */
         template <typename t_in,
                   typename t_out>
@@ -629,44 +636,45 @@ namespace UVLM
             t_out& collocation_mesh
         )
         {
-            // Size of surfaces contained in a vector of tuples
+            // Size of surfaces contained in a vector of tuples 一个元组vector，存储网格顶点（角点）的数量，例如vector<(M+1,N+1), ...>
             UVLM::Types::VecDimensions dimensions;
-            UVLM::Types::generate_dimensions(vortex_mesh, dimensions);
+            UVLM::Types::generate_dimensions(vortex_mesh, dimensions);  // 存储网格顶点（角点）的数量(M+1,N+1)
 
             if (collocation_mesh.empty())
             {
                 UVLM::Types::allocate_VecVecMat(collocation_mesh,
                                                 UVLM::Constants::NDIM,
                                                 dimensions,
-                                                -1);
+                                                -1);    // dimensions的行列-1即面板数(M,N)
             }
-            for (unsigned int i_surf=0; i_surf<dimensions.size(); ++i_surf)
+            for (unsigned int i_surf=0; i_surf<dimensions.size(); ++i_surf) // 逐表面扫描
             {
                 if ((dimensions[i_surf].first > 0) || (dimensions[i_surf].second > 0 ))
                 {
+                    // (M+1,N+1) -> (M,N)
                     UVLM::Mapping::BilinearMapping(vortex_mesh[i_surf],
-                                                collocation_mesh[i_surf]);
+                                                collocation_mesh[i_surf]);  // 执行双线性映射，2x2平均池化
                 }
             }
         }
         /**
-         * @brief Calculates the difference between adjacent elements in a vector.
+         * @brief Calculates the difference between adjacent elements in a vector. 计算向量中相邻元素之间的差异。
          * 
-         * This function is used to calculate the distance between the corner points.
+         * This function is used to calculate the distance between the corner points. 这个函数用于计算角点之间的距离。
          * 
-         * @param vec The input vector.
-         * @return A vector containing the differences between adjacent elements.
+         * @param vec The input vector. 输入向量。
+         * @return A vector containing the differences between adjacent elements. 一个向量，包含相邻元素之间的差异。
          */
         UVLM::Types::VectorX get_vector_diff(UVLM::Types::VectorX& vec)
         {
-            // Calcualtes difference between adjascent vector scalars
+            // Calcualtes difference between adjascent vector scalars 计算相邻向量标量（向量的某一维度分量）之间的差异
             const uint vector_size = vec.rows();
             UVLM::Types::VectorX vec_out(vector_size);
             for(uint i = 0; i < vector_size-1; ++i)
             {
-                vec_out[i] = vec[i+1] - vec[i];
+                vec_out[i] = vec[i+1] - vec[i]; // 计算相邻向量标量之间的差异
             }
-            vec_out[vector_size-1] = vec[0] - vec[vector_size-1];
+            vec_out[vector_size-1] = vec[0] - vec[vector_size-1];   // vec_out的最后一个元素是vec第一个元素与最后一个元素之间的差异
             return vec_out;
         }
 
@@ -677,23 +685,24 @@ namespace UVLM
     /**
      * @file interpolation.h
      * @brief This file contains interpolation functions for mapping data between different coordinate systems.
+     *        这个文件包含用于在不同坐标系之间映射数据的插值函数。
      */
 
 
     namespace Interpolation {
 
         /**
-         * @brief Perform linear interpolation between two sets of coordinates.
+         * @brief Perform linear interpolation between two sets of coordinates. 在两个坐标集之间执行线性插值。
          *
-         * @param M The number of data points to interpolate.
-         * @param dist_to_orig The distances to the original points.
-         * @param dist_to_orig_conv The distances to the converted points.
-         * @param coord0 The first component of the original coordinates.
-         * @param coord1 The second component of the original coordinates.
-         * @param coord2 The third component of the original coordinates.
-         * @param new_coord0 The first component of the new coordinates.
-         * @param new_coord1 The second component of the new coordinates.
-         * @param new_coord2 The third component of the new coordinates.
+         * @param M The number of data points to interpolate. 待插值的数据点数。
+         * @param dist_to_orig The distances to the original points. 原始点集的参数化距离。
+         * @param dist_to_orig_conv The distances to the converted points. 目标点集的参数化距离。
+         * @param coord0 The first component of the original coordinates. 原始点集的第一个坐标分量。
+         * @param coord1 The second component of the original coordinates. 原始点集的第二个坐标分量。
+         * @param coord2 The third component of the original coordinates. 原始点集的第三个坐标分量。
+         * @param new_coord0 The first component of the new coordinates. 插值后的目标点集的第一个坐标分量。
+         * @param new_coord1 The second component of the new coordinates. 插值后的目标点集的第二个坐标分量。
+         * @param new_coord2 The third component of the new coordinates. 插值后的目标点集的第三个坐标分量。
          */
         template <typename t_dist, typename t_dist_conv, typename t_coord, typename t_coord_conv>
         void linear(
@@ -709,33 +718,35 @@ namespace UVLM
         )
         {
             UVLM::Types::Real to_prev, to_next, prev_to_next;
-            uint i_conv=0;
+            uint i_conv=0;  // 标记当前转换点的索引
             for (unsigned int i_m=0; i_m<M; ++i_m)
             {
                 while ((dist_to_orig_conv(i_conv) <= dist_to_orig(i_m)) and (i_conv < M))
-                {i_conv++;}
-
-                to_prev = dist_to_orig(i_m) - dist_to_orig_conv(i_conv - 1);
-                to_next = dist_to_orig_conv(i_conv) - dist_to_orig(i_m);
-                prev_to_next = dist_to_orig_conv(i_conv) - dist_to_orig_conv(i_conv - 1);
-                new_coord0(i_m) = (to_prev*coord0(i_conv) + to_next*coord0(i_conv - 1))/prev_to_next;
-                new_coord1(i_m) = (to_prev*coord1(i_conv) + to_next*coord1(i_conv - 1))/prev_to_next;
-                new_coord2(i_m) = (to_prev*coord2(i_conv) + to_next*coord2(i_conv - 1))/prev_to_next;
+                {i_conv++;} // 对每个目标点，找到其在原始点集中包含它的区间（i_conv-1,i_conv）
+                
+                // 计算插值权重
+                to_prev = dist_to_orig(i_m) - dist_to_orig_conv(i_conv - 1);    // x - x_0, y - y_0, z - z_0
+                to_next = dist_to_orig_conv(i_conv) - dist_to_orig(i_m);    // x_1 - x, y_1 - y, z_1 - z
+                prev_to_next = dist_to_orig_conv(i_conv) - dist_to_orig_conv(i_conv - 1);   // x_1 - x_0, y_1 - y_0, z_1 - z_0
+                // 线性插值
+                new_coord0(i_m) = (to_prev*coord0(i_conv) + to_next*coord0(i_conv - 1))/prev_to_next;   // x = x_1 * (x - x_0) + x_0 * (x_1 - x) / (x_1 - x_0)
+                new_coord1(i_m) = (to_prev*coord1(i_conv) + to_next*coord1(i_conv - 1))/prev_to_next;   // y = y_1 * (y - y_0) + y_0 * (y_1 - y) / (y_1 - y_0)
+                new_coord2(i_m) = (to_prev*coord2(i_conv) + to_next*coord2(i_conv - 1))/prev_to_next;   // z = z_1 * (z - z_0) + z_0 * (z_1 - z) / (z_1 - z_0)
             }
         } // linear
 
         /**
-         * @brief Perform parabolic interpolation between two sets of coordinates.
+         * @brief Perform parabolic interpolation between two sets of coordinates. 在两个坐标集之间执行抛物线插值。
          *
-         * @param M The number of data points to interpolate.
-         * @param dist_to_orig The distances to the original points.
-         * @param dist_to_orig_conv The distances to the converted points.
-         * @param coord0 The first component of the original coordinates.
-         * @param coord1 The second component of the original coordinates.
-         * @param coord2 The third component of the original coordinates.
-         * @param new_coord0 The first component of the new coordinates.
-         * @param new_coord1 The second component of the new coordinates.
-         * @param new_coord2 The third component of the new coordinates.
+         * @param M The number of data points to interpolate. 待插值的数据点数。
+         * @param dist_to_orig The distances to the original points. 原始点集的参数化距离。
+         * @param dist_to_orig_conv The distances to the converted points. 目标点集的参数化距离。
+         * @param coord0 The first component of the original coordinates. 原始点集的第一个坐标分量。
+         * @param coord1 The second component of the original coordinates. 原始点集的第二个坐标分量。
+         * @param coord2 The third component of the original coordinates. 原始点集的第三个坐标分量。
+         * @param new_coord0 The first component of the new coordinates. 插值后的目标点集的第一个坐标分量。
+         * @param new_coord1 The second component of the new coordinates. 插值后的目标点集的第二个坐标分量。
+         * @param new_coord2 The third component of the new coordinates. 插值后的目标点集的第三个坐标分量。
          */
         template <typename t_dist, typename t_dist_conv, typename t_coord, typename t_coord_conv>
         void parabolic(
@@ -809,17 +820,17 @@ namespace UVLM
             }
         } // parabolic
         /**
-         * @brief Perform cubic spline interpolation between two sets of coordinates.
+         * @brief Perform cubic spline interpolation between two sets of coordinates. 在两个坐标集之间执行三次样条插值。
          *
-         * @param M The number of data points to interpolate.
-         * @param dist_to_orig The distances to the original points.
-         * @param dist_to_orig_conv The distances to the converted points.
-         * @param coord0 The first component of the original coordinates.
-         * @param coord1 The second component of the original coordinates.
-         * @param coord2 The third component of the original coordinates.
-         * @param new_coord0 The first component of the new coordinates.
-         * @param new_coord1 The second component of the new coordinates.
-         * @param new_coord2 The third component of the new coordinates.
+         * @param M The number of data points to interpolate. 待插值的数据点数。
+         * @param dist_to_orig The distances to the original points. 原始点集的参数化距离。
+         * @param dist_to_orig_conv The distances to the converted points. 目标点集的参数化距离。
+         * @param coord0 The first component of the original coordinates. 原始点集的第一个坐标分量。
+         * @param coord1 The second component of the original coordinates. 原始点集的第二个坐标分量。
+         * @param coord2 The third component of the original coordinates. 原始点集的第三个坐标分量。
+         * @param new_coord0 The first component of the new coordinates. 插值后的目标点集的第一个坐标分量。
+         * @param new_coord1 The second component of the new coordinates. 插值后的目标点集的第二个坐标分量。
+         * @param new_coord2 The third component of the new coordinates. 插值后的目标点集的第三个坐标分量。
          */
         template <typename t_dist, typename t_dist_conv, typename t_coord, typename t_coord_conv>
         void splines(
@@ -852,18 +863,18 @@ namespace UVLM
         } // splines
 
         /**
-         * @brief Perform spherical linear interpolation (slerp) in the z-plane.
+         * @brief Perform spherical linear interpolation (slerp) in the z-plane. 在z平面上执行球面线性插值（slerp）。
          *
-         * @param M The number of data points to interpolate.
-         * @param centre_rot The rotation center.
-         * @param dist_to_orig The distances to the original points.
-         * @param dist_to_orig_conv The distances to the converted points.
-         * @param coord0 The first component of the original coordinates.
-         * @param coord1 The second component of the original coordinates.
-         * @param coord2 The third component of the original coordinates.
-         * @param new_coord0 The first component of the new coordinates.
-         * @param new_coord1 The second component of the new coordinates.
-         * @param new_coord2 The third component of the new coordinates.
+         * @param M The number of data points to interpolate. 待插值的数据点数。
+         * @param centre_rot The rotation center. 旋转中心。
+         * @param dist_to_orig The distances to the original points. 原始点集的参数化距离。
+         * @param dist_to_orig_conv The distances to the converted points. 目标点集的参数化距离。
+         * @param coord0 The first component of the original coordinates. 原始点集的第一个坐标分量。
+         * @param coord1 The second component of the original coordinates. 原始点集的第二个坐标分量。
+         * @param coord2 The third component of the original coordinates. 原始点集的第三个坐标分量。
+         * @param new_coord0 The first component of the new coordinates. 插值后的目标点集的第一个坐标分量。
+         * @param new_coord1 The second component of the new coordinates. 插值后的目标点集的第二个坐标分量。
+         * @param new_coord2 The third component of the new coordinates. 插值后的目标点集的第三个坐标分量。
          */
         template <typename t_centre_rot, typename t_dist, typename t_dist_conv, typename t_coord, typename t_coord_conv>
         void slerp_z(
@@ -923,19 +934,19 @@ namespace UVLM
         } // slerp_z
 
         /**
-         * @brief Perform spherical linear interpolation (slerp) around a yaw axis.
+         * @brief Perform spherical linear interpolation (slerp) around a yaw axis. 在偏航轴上执行球面线性插值（slerp）。
          *
-         * @param M The number of data points to interpolate.
-         * @param yaw The yaw angle.
-         * @param centre_rot The rotation center.
-         * @param dist_to_orig The distances to the original points.
-         * @param dist_to_orig_conv The distances to the converted points.
-         * @param coord0 The first component of the original coordinates.
-         * @param coord1 The second component of the original coordinates.
-         * @param coord2 The third component of the original coordinates.
-         * @param new_coord0 The first component of the new coordinates.
-         * @param new_coord1 The second component of the new coordinates.
-         * @param new_coord2 The third component of the new coordinates.
+         * @param M The number of data points to interpolate. 待插值的数据点数。
+         * @param yaw The yaw angle. 偏航角。
+         * @param centre_rot The rotation center. 旋转中心。
+         * @param dist_to_orig The distances to the original points. 原始点集的参数化距离。
+         * @param dist_to_orig_conv The distances to the converted points. 目标点集的参数化距离。
+         * @param coord0 The first component of the original coordinates. 原始点集的第一个坐标分量。
+         * @param coord1 The second component of the original coordinates. 原始点集的第二个坐标分量。
+         * @param coord2 The third component of the original coordinates. 原始点集的第三个坐标分量。
+         * @param new_coord0 The first component of the new coordinates. 插值后的目标点集的第一个坐标分量。
+         * @param new_coord1 The second component of the new coordinates. 插值后的目标点集的第二个坐标分量。
+         * @param new_coord2 The third component of the new coordinates. 插值后的目标点集的第三个坐标分量。
          */
         template <typename t_centre_rot, typename t_dist, typename t_dist_conv, typename t_coord, typename t_coord_conv>
         void slerp_yaw(
@@ -1021,23 +1032,26 @@ namespace UVLM
     //
     /**
      * @namespace Filters
-     * @brief This namespace contains filtering functions for smoothing and processing data.
+     * @brief This namespace contains filtering functions for smoothing and processing data. 该命名空间包含用于平滑和处理数据的滤波函数。
      */
     namespace Filters
     {
         /**
-         * @brief Apply a moving average filter to smooth a set of coordinates.
+         * @brief Apply a moving average filter to smooth a set of coordinates. 对一组坐标应用滑动平均滤波器以平滑数据。
          *
          * This function performs a moving average filter on three sets of coordinates (coord0, coord1, and coord2).
          * The moving average filter is applied with a specified window size. For each data point, the function computes
          * an average of nearby data points within the window size, resulting in smoothed coordinates.
+         * 这个函数对三组坐标（coord0、coord1和coord2）执行滑动平均滤波器。
+         * 滑动平均滤波器的应用具有指定的窗口大小。
+         * 对于每个数据点，该函数计算窗口大小内附近数据点的平均值，从而得到平滑的坐标。
          *
-         * @param M The number of data points to filter.
-         * @param window The window size for the moving average filter (must be odd).
-         * @param x The input data (not modified).
-         * @param coord0 The first component of the original coordinates (updated with smoothed values).
-         * @param coord1 The second component of the original coordinates (updated with smoothed values).
-         * @param coord2 The third component of the original coordinates (updated with smoothed values).
+         * @param M The number of data points to filter. 待滤波的数据点数。
+         * @param window The window size for the moving average filter (must be odd). 滑动平均滤波器的窗口大小（必须是奇数）。
+         * @param x The input data (not modified). 输入数据（不会被修改）。
+         * @param coord0 The first component of the original coordinates (updated with smoothed values). 原始坐标的第一个分量（用平滑值更新）。
+         * @param coord1 The second component of the original coordinates (updated with smoothed values). 原始坐标的第二个分量（用平滑值更新）。
+         * @param coord2 The third component of the original coordinates (updated with smoothed values). 原始坐标的第三个分量（用平滑值更新）。
          */
         template <typename t_coord>
         void moving_average(
@@ -1047,7 +1061,7 @@ namespace UVLM
             t_coord& coord0,
             t_coord& coord1,
             t_coord& coord2
-        )
+        )   // 被wake.h调用，用于处理CFL!=1时的情况
         {
             unsigned int sp;
             UVLM::Types::Real aux_coord0[M], aux_coord1[M], aux_coord2[M];

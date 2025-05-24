@@ -50,10 +50,10 @@ namespace UVLM
 
 
         /**
-         * @brief Perform bilinear mapping on input and output vectors. 对输入和输出向量执行双线性映射。
+         * @brief Perform bilinear mapping on input and output vectors. 对输入和输出向量执行双线性映射（2x2平均池化）。
          *
          * This function performs bilinear mapping on the input and output vectors.
-         * 这个函数对输入和输出向量执行双线性映射。
+         * 这个函数对输入和输出向量执行双线性映射，等价于kernel_size=2, stride=1, padding=0的平均池化操作。
          *
          * @tparam t_in Type of the input vector. 输入向量的类型
          * @tparam t_out Type of the output vector. 输出向量的类型
